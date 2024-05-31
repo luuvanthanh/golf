@@ -1,0 +1,180 @@
+title = "cart"
+layout = ""
+url = "/cart"
+==
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Cửa Hàng</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="products">Trang Chủ <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Sản Phẩm</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Liên Hệ</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-shopping-cart"></i> Giỏ Hàng <span class="badge badge-pill badge-danger" id="cart-count">0</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <h1 class="text-center">Giỏ Hàng</h1>
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>ID</th>
+                        <th>Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Giá</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-items">
+                    <!-- Các sản phẩm trong giỏ hàng sẽ được hiển thị tại đây -->
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Tóm Tắt Đơn Hàng
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Tổng Cộng</h5>
+                    <p class="card-text" id="total-price">0 VND</p>
+                    <a href="/checkout" class="btn btn-success btn-block">Thanh Toán</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-light text-center text-lg-start mt-5">
+    <div class="container p-4">
+        <p class="text-center">© 2024 Cửa Hàng. All Rights Reserved.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+<script>
+    $(document).ready(function() {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        function updateCartCount() {
+            $('#cart-count').text(cart.length);
+        }
+
+        updateCartCount();
+
+        function updateCart() {
+            let cartItems = '';
+            let totalPrice = 0;
+
+            const sumWithInitial = cart.reduce(
+            (accumulator, currentValue) => {
+                let price = Number(currentValue.price) * Number(currentValue.quantity);
+                return accumulator + price
+            },
+            totalPrice,
+            );
+
+            cart.forEach(item => {
+
+                cartItems += `
+                    <tr class="shop-cart">
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input isCheck" type="checkbox" value="${item.id}" ${item.isCheck ? 'checked' : ''}>
+                            </div>
+                        </td>
+                        <td class="id">${item.id}</td>
+                        <td>${item.name}</td>
+                        <td>
+                            <input type="number" class="form-control item-quantity" data-id="${item.id}" value="${item.quantity}" min="1">
+                        </td>
+                        <td>${Math.round(item.price)} VND</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm update-cart" data-id="${item.id}">Cập Nhật</button>
+                            <button class="btn btn-danger btn-sm remove-item" data-id="${item.id}">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            $('#cart-items').html(cartItems);
+            $('#total-price').text(sumWithInitial + ' VND');
+        }
+
+        $(document).on('click', '.update-cart', function() {
+            let id = $(this).closest(".shop-cart").find(".id").text();
+            let quantity = $(this).closest('tr').find('.item-quantity').val();
+
+            let item = cart.find(item => item.id === id);
+            if (item) {
+                item.quantity = parseInt(quantity);
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+        });
+
+        $(document).on('click', '.remove-item', function() {
+            let id = $(this).closest(".shop-cart").find(".id").text();
+            cart = cart.filter(item => item.id !== id);
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+        });
+
+        $(document).on('click', '.isCheck', function() {
+            let id = $(this).val();
+            let item = cart.find(item => item.id === id);
+
+            if (item.isCheck == false) {
+                item.isCheck = true;
+                $(this).is(':checked');
+            }else {
+                item.isCheck = false;
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+        });
+
+        updateCart();
+    });
+</script>
+</body>
+</html>

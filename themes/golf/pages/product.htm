@@ -1,0 +1,30 @@
+title = "product"
+layout = "default"
+url = "/product/:slug"
+
+[ProductPage]
+==
+{% set obProduct = ProductPage.get() %}
+
+<!-- Main Content -->
+<div class="container mt-5">
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6">
+            <h1></h1>
+            <img src="https://via.placeholder.com/300" class="img-fluid" alt="Product Image" id="product-image">
+        </div>
+        <!-- Product Details -->
+        <div class="col-md-6 card">
+            <input class="id" type="hidden" value="{{obProduct.id}}">
+            <h1 class="product-name">{{obProduct.name}}</h1>
+            <p id="product-description">{{obProduct.preview_text}}</p>
+            {% for offer in product.offer %}
+                <p class="card-price">{{offer.price}}</p>
+            {% endfor %}
+            <div class="mt-4">
+                <button class="btn btn-success ml-2 add-to-cart"><i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng</button>
+            </div>
+        </div>
+    </div>
+</div>
